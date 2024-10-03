@@ -1,0 +1,21 @@
+{
+  "name": "proyecto_ensamblaje",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0",
+    "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
+    "underscore": "^1.13.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  },
+  "description": ""
+}
