@@ -9,20 +9,20 @@ router.get('/', (req, res) => {
     res.send(users);
 });
 
-router.post('/',(req, res) =>{
-    const {id, name, last_name, user} = req.body;
+router.post('/', (req, res) => {
+    const { name, last_name, user } = req.body;
 
-    if (name && last_name &&user){
+    if (name && last_name && user) {
         const id = users.length + 1;
-        const newUser = {id, ...req.body};
+        const newUser = { id, name, last_name, user };
         console.log(newUser);
-        movies.push(newUser);
+        users.push(newUser);  // Cambié movies por users
         res.json(users);
     } else {
-        res.status(500).json({error: `There was an error.`});
-        }
-
+        res.status(500).json({ error: 'There was an error.' });
+    }
 });
+
 
 router.put('/:id', (req, res)=>{
     const {id}= req.params;
@@ -48,7 +48,9 @@ router.delete(`/:id`, (req, res) =>{
             users.splice(i, 1);
         }
     });
-    res.send(`deleted`);  
+    res.send(`deleted`);
+    res.status(200).json({ message: 'User deleted successfully' });
+
 });
 
 module.exports = router;
