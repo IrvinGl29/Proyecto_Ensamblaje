@@ -1,0 +1,19 @@
+[
+    {
+        "id": 1,
+        "name": "CPU",
+        "type": "Processor",
+        "manufacturer": "Intel",
+        "price": 250.00,
+        "stock": 100
+    },
+    {
+        "id": 2,
+        "name": "Motherboard",
+        "type": "Motherboard",
+        "manufacturer": "ASUS",
+        "price": 150.00,
+        "stock": 80
+    }
+    
+]

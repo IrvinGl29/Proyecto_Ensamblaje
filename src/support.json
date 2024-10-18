@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "customerName": "John Doe",
+        "issueDescription": "PC won't boot up",
+        "components": [
+            {
+                "componentId": 1,
+                "quantity": 1
+            }
+        ],
+        "status": "Pending"
+    },
+    {
+        "id": 2,
+        "customerName": "Jane Smith",
+        "issueDescription": "Overheating issue",
+        "components": [
+            {
+                "componentId": 2,
+                "quantity": 1
+            }
+        ],
+        "status": "Resolved"
+    }
+  
+]

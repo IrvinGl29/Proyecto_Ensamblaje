@@ -1,0 +1,33 @@
+[
+    {
+        "id": 1,
+        "name": "Gaming Build",
+        "components": [
+            {
+                "componentId": 1,
+                "quantity": 1
+            },
+            {
+                "componentId": 2,
+                "quantity": 1
+            }
+        ],
+        "price": 1500.00
+    },
+    {
+        "id": 2,
+        "name": "Workstation Build",
+        "components": [
+            {
+                "componentId": 3,
+                "quantity": 1
+            },
+            {
+                "componentId": 4,
+                "quantity": 1
+            }
+        ],
+        "price": 1200.00
+    }
+    
+]
