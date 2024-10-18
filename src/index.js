@@ -13,10 +13,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 //routes (modularizadas)
-app.use('/api/users', require('./routes/users'));
+//app.use('/api/users', require('./routes/users'));
 //app.use('/api/components', require('./routes/components'));
 //app.use('/api/pc-builds', require('./routes/pc-builds'));
-//app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/inventory', require('./routes/inventory'));
 //app.use('/api/support', require('./routes/support'));
 
 //empezando el servidor

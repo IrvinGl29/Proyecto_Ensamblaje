@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "name": "Laptop",
+        "category": "Electronics",
+        "quantity": 15,
+        "price": 1200.00
+    },
+    {
+        "id": 2,
+        "name": "Phone",
+        "category": "Electronics",
+        "quantity": 30,
+        "price": 800.00
+    },
+    {
+        "id": 3,
+        "name": "Chair",
+        "category": "Furniture",
+        "quantity": 45,
+        "price": 150.00
+    },
+    {
+        "id": 4,
+        "name": "Desk",
+        "category": "Furniture",
+        "quantity": 20,
+        "price": 300.00
+    }
+]
