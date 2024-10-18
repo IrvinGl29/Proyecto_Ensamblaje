@@ -19,6 +19,8 @@ app.use(express.json());
 app.use('/api/inventory', require('./routes/inventory'));
 //app.use('/api/support', require('./routes/support'));
 
+//Javi se la come pero si bien bien bien doblada
+
 //empezando el servidor
 app.listen(app.get('port'), () => {
     console.log(`Server on port ${app.get('port')}`);
