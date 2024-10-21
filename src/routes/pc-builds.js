@@ -1,26 +1,34 @@
 const { Router } = require('express');
 const router = Router();
-const _ = require('underscore');
-const fs = require('fs');
+const db = require('../../config/db'); // Asegúrate de que la ruta a db.js sea correcta
+const { validateToken } = require('./auth'); // Importa el middleware
 
-let pcBuilds = require('../pc-builds.json'); // Cambia esto por la ruta correcta de tu archivo JSON
-console.log(pcBuilds);
+router.use(validateToken);
 
 // Obtener todas las configuraciones de ensamblaje
 router.get('/', (req, res) => {
-    res.send(pcBuilds);
+    const query = 'SELECT * FROM pc_builds'; // Consulta SQL para obtener todas las configuraciones de ensamblaje
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error retrieving data from database.' });
+        }
+        res.json(results); // Enviar las configuraciones como respuesta
+    });
 });
 
 // Obtener una configuración específica por ID
 router.get('/:id', (req, res) => {
     const { id } = req.params;
-    const pcBuild = pcBuilds.find(build => build.id == id);
-
-    if (pcBuild) {
-        res.json(pcBuild);
-    } else {
-        res.status(404).json({ error: 'PC Build not found.' });
-    }
+    const query = 'SELECT * FROM pc_builds WHERE id = ?';
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error retrieving PC Build.' });
+        }
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'PC Build not found.' });
+        }
+        res.json(result[0]); // Enviar la configuración como respuesta
+    });
 });
 
 // Agregar una nueva configuración de ensamblaje
@@ -28,17 +36,12 @@ router.post('/', (req, res) => {
     const { name, components, price } = req.body;
 
     if (name && components && price) {
-        const id = pcBuilds.length + 1; // Asignar un nuevo ID
-        const newBuild = { id, name, components, price };
-        pcBuilds.push(newBuild); // Agregar la nueva configuración al array
-
-        // Guardar el array actualizado en el archivo pc-builds.json
-        fs.writeFile('./pc-builds.json', JSON.stringify(pcBuilds, null, 2), (err) => {
+        const query = 'INSERT INTO pc_builds (name, components, price) VALUES (?, ?, ?)';
+        db.query(query, [name, components, price], (err, result) => {
             if (err) {
-                console.error('Error writing to file', err);
-                return res.status(500).json({ error: 'There was an error saving the PC Build.' });
+                return res.status(500).json({ error: 'Error saving PC Build to database.' });
             }
-            res.json(pcBuilds); // Enviar la respuesta con el array actualizado
+            res.json({ message: 'PC Build added successfully', pcBuildId: result.insertId });
         });
     } else {
         res.status(400).json({ error: 'Please provide name, components, and price.' });
@@ -51,28 +54,16 @@ router.put('/:id', (req, res) => {
     const { name, components, price } = req.body;
 
     if (name && components && price) {
-        let buildFound = false;
-        _.each(pcBuilds, (build, i) => {
-            if (build.id == id) {
-                build.name = name;
-                build.components = components;
-                build.price = price;
-                buildFound = true;
+        const query = 'UPDATE pc_builds SET name = ?, components = ?, price = ? WHERE id = ?';
+        db.query(query, [name, components, price, id], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error updating PC Build.' });
             }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'PC Build not found.' });
+            }
+            res.json({ message: 'PC Build updated successfully' });
         });
-
-        if (buildFound) {
-            // Guardar el array actualizado en el archivo pc-builds.json
-            fs.writeFile('./pc-builds.json', JSON.stringify(pcBuilds, null, 2), (err) => {
-                if (err) {
-                    console.error('Error writing to file', err);
-                    return res.status(500).json({ error: 'There was an error saving the updated PC Build.' });
-                }
-                res.json(pcBuilds);
-            });
-        } else {
-            res.status(404).json({ error: 'PC Build not found.' });
-        }
     } else {
         res.status(400).json({ error: 'Please provide name, components, and price.' });
     }
@@ -81,30 +72,16 @@ router.put('/:id', (req, res) => {
 // Eliminar una configuración de ensamblaje por ID
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
-    let buildFound = false; // Bandera para verificar si la configuración fue encontrada y eliminada
-
-    // Filtrar el array para eliminar la configuración correspondiente
-    pcBuilds = pcBuilds.filter((build) => {
-        if (build.id == id) {
-            buildFound = true; // Marca que se encontró la configuración
-            return false; // No incluir esta configuración en el nuevo array
+    const query = 'DELETE FROM pc_builds WHERE id = ?';
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error deleting PC Build.' });
         }
-        return true; // Mantener esta configuración en el nuevo array
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'PC Build not found.' });
+        }
+        res.json({ message: 'PC Build deleted successfully' });
     });
-
-    // Si se encontró y eliminó la configuración, actualizar el archivo
-    if (buildFound) {
-        fs.writeFile('./pc-builds.json', JSON.stringify(pcBuilds, null, 2), (err) => {
-            if (err) {
-                console.error('Error writing to file', err);
-                return res.status(500).json({ error: 'There was an error deleting the PC Build.' });
-            }
-            res.status(200).json({ message: 'PC Build deleted successfully' });
-        });
-    } else {
-        // Si no se encontró la configuración
-        res.status(404).json({ error: 'PC Build not found.' });
-    }
 });
 
 module.exports = router;

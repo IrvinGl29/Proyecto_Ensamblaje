@@ -1,45 +1,47 @@
 const { Router } = require('express');
-const { validateToken } = require('./auth'); // Importa el middleware
 const router = Router();
-const _ = require('underscore');
-const fs = require('fs');
+const db = require('../../config/db');
+const { validateToken } = require('./auth'); // Importa el middleware
 
-let inventory = require('../inventory.json');
 
-// Aplica el middleware para proteger todas las rutas en este router
 router.use(validateToken);
 
 // Obtener todos los productos del inventario
 router.get('/', (req, res) => {
-    res.send(inventory);
+    const query = 'SELECT * FROM inventory'; // Consulta SQL para obtener todos los productos
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error retrieving data from database.' });
+        }
+        res.json(results); // Enviar los productos como respuesta
+    });
 });
 
 // Obtener un producto específico por ID
 router.get('/:id', (req, res) => {
     const { id } = req.params;
-    const product = inventory.find(product => product.id == id);
-
-    if (product) {
-        res.json(product);
-    } else {
-        res.status(404).json({ error: 'Product not found.' });
-    }
+    const query = 'SELECT * FROM inventory WHERE id = ?';
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error retrieving product.' });
+        }
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Product not found.' });
+        }
+        res.json(result[0]); // Enviar el producto como respuesta
+    });
 });
 
 // Agregar un nuevo producto al inventario
 router.post('/', (req, res) => {
     const { name, category, quantity, price } = req.body;
-
     if (name && category && quantity && price) {
-        const id = inventory.length + 1; // Asignar un nuevo ID
-        const newProduct = { id, name, category, quantity, price };
-        inventory.push(newProduct);
-
-        fs.writeFile('../inventory.json', JSON.stringify(inventory, null, 2), (err) => {
+        const query = 'INSERT INTO inventory (name, category, quantity, price) VALUES (?, ?, ?, ?)';
+        db.query(query, [name, category, quantity, price], (err, result) => {
             if (err) {
-                return res.status(500).json({ error: 'There was an error saving the product.' });
+                return res.status(500).json({ error: 'Error saving product to database.' });
             }
-            res.json(inventory);
+            res.json({ message: 'Product added successfully', productId: result.insertId });
         });
     } else {
         res.status(400).json({ error: 'Please provide name, category, quantity, and price.' });
@@ -50,29 +52,17 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { name, category, quantity, price } = req.body;
-
     if (name && category && quantity && price) {
-        let productFound = false;
-        _.each(inventory, (product) => {
-            if (product.id == id) {
-                product.name = name;
-                product.category = category;
-                product.quantity = quantity;
-                product.price = price;
-                productFound = true;
+        const query = 'UPDATE inventory SET name = ?, category = ?, quantity = ?, price = ? WHERE id = ?';
+        db.query(query, [name, category, quantity, price, id], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error updating product.' });
             }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Product not found.' });
+            }
+            res.json({ message: 'Product updated successfully' });
         });
-
-        if (productFound) {
-            fs.writeFile('../inventory.json', JSON.stringify(inventory, null, 2), (err) => {
-                if (err) {
-                    return res.status(500).json({ error: 'There was an error saving the updated product.' });
-                }
-                res.json(inventory);
-            });
-        } else {
-            res.status(404).json({ error: 'Product not found.' });
-        }
     } else {
         res.status(400).json({ error: 'Please provide name, category, quantity, and price.' });
     }
@@ -81,26 +71,16 @@ router.put('/:id', (req, res) => {
 // Eliminar un producto del inventario por ID
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
-    let productFound = false;
-
-    inventory = inventory.filter((product) => {
-        if (product.id == id) {
-            productFound = true;
-            return false;
+    const query = 'DELETE FROM inventory WHERE id = ?';
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error deleting product.' });
         }
-        return true;
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Product not found.' });
+        }
+        res.json({ message: 'Product deleted successfully' });
     });
-
-    if (productFound) {
-        fs.writeFile('../inventory.json', JSON.stringify(inventory, null, 2), (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'There was an error deleting the product.' });
-            }
-            res.status(200).json({ message: 'Product deleted successfully' });
-        });
-    } else {
-        res.status(404).json({ error: 'Product not found.' });
-    }
 });
 
 module.exports = router;

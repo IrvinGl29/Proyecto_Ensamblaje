@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 require('dotenv').config();
 const { router: authRouter, validateToken } = require('./src/routes/auth'); // Importa el router y el middleware
+const db = require('./config/db');  // Asegúrate de que la ruta sea correcta
 
 const app = express();
 
@@ -17,14 +18,13 @@ app.use(express.json());
 // Rutas de autenticación
 app.use('/api/auth', authRouter);
 
+// Aplica el middleware de validación a todas las rutas
+app.use(validateToken); // Protege todas las rutas a partir de aquí
+
 // Rutas modularizadas
 app.use('/api/components', require('./src/routes/components'));
 app.use('/api/pc-builds', require('./src/routes/pc-builds'));
-
-// Aplica el middleware a las rutas de inventario
-const inventoryRouter = require('./src/routes/inventory');
-app.use('/api/inventory', validateToken, inventoryRouter); // Protege las rutas de inventario
-
+app.use('/api/inventory', require('./src/routes/inventory'));
 app.use('/api/support', require('./src/routes/support'));
 
 // Empezando el servidor
