@@ -28,6 +28,12 @@ app.use('/api/inventory', require('./src/routes/inventory'));
 app.use('/api/support', require('./src/routes/support'));
 
 // Empezando el servidor
-app.listen(app.get('port'), () => {
-    console.log(`Server on port ${app.get('port')}`);
+const port = app.get('port');
+app.listen(port, '0.0.0.0', (err) => {
+    if (err) {
+        console.error(`Error starting server: ${err.message}`);
+        process.exit(1); // Termina el proceso si hay un error
+    } else {
+        console.log(`Server running on http://localhost:${port}`);
+    }
 });
