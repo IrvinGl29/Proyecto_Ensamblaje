@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test CORS</title>
+</head>
+<body>
+    <h1>Test CORS</h1>
+    <button onclick="testCORS()">Test CORS Request</button>
+
+    <script>
+        // Asegúrate de poner un token válido aquí
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImlydmluIiwiaWF0IjoxNzMwODY1MTg5LCJleHAiOjE3MzA4NjU0ODl9.b4ihp79n4p4E5gSDhzQaSlZYsChtnmp6ak3SmTm3Jr0'
+        function testCORS() {
+            if (!token) {
+                console.error('JWT token is missing');
+                return;
+            }
+    
+            fetch('http://10.0.2.15:3000/api/inventory', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Enviar el token en el encabezado Authorization
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`); });
+                }
+                return response.json();
+            })
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+    
+</body>
+</html>
