@@ -1,0 +1,175 @@
+/* Estilos generales del cuerpo */
+body {
+    font-family: Raleway, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor principal */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Barra superior */
+.navbar {
+    background-color: #0073e6;
+    padding: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    position: relative;  /* Para que el menú hamburguesa se ubique correctamente */
+}
+
+.navbar button {
+    padding: 10px 20px;
+    font-size: 1em;
+    color: white;
+    background-color: #0073e6;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.navbar button:hover {
+    background-color: #005bb5;
+}
+
+/* Botón hamburguesa para teléfonos */
+.hamburger {
+    display: none;  /* Se ocultará por defecto en pantallas grandes */
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: 25px;
+    width: 30px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.hamburger div {
+    width: 30px;
+    height: 4px;
+    background-color: white;
+    border-radius: 2px;
+}
+
+/* Botón de cerrar sesión fuera de la barra superior */
+#logout-btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 25px;
+}
+
+#logout-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Mensaje de bienvenida */
+.welcome-message {
+    background-color: #ffffff;
+    padding: 50px 20px; /* Reduce el padding horizontal */
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: auto;  /* Ajusta la altura del contenedor automáticamente */
+    max-width: 800px; /* Limita el ancho máximo del contenedor */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.welcome-message h1 {
+    font-size: 2em;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+/* Media query para pantallas pequeñas (teléfonos) */
+@media (max-width: 600px) {
+    .navbar {
+        display: flex; /* Flexbox para la barra de navegación */
+        justify-content: flex-start; /* Alinea los elementos al inicio (izquierda) */
+        align-items: center;
+        height: 35px; /* Aumenta la altura de la barra de navegación */
+        background-color: #0073e6; /* Barra superior de color azul */
+    }
+
+    .navbar button {
+        display: none; /* Oculta los botones en dispositivos móviles */
+    }
+
+    /* Estilo del botón hamburguesa */
+    .hamburger {
+        display: block;
+        cursor: pointer;
+        margin-left: 10px; /* Alinea el botón hamburguesa a la izquierda */
+    }
+
+    .hamburger div {
+        width: 35px;
+        height: 5px;
+        margin: 6px 0;
+        background-color: #fff;
+        transition: 0.4s;
+    }
+
+    /* Estilo cuando la clase "open" está activa (menú desplegable visible) */
+    .navbar.open {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background-color: #0073e6; /* Color de fondo para el menú desplegable */
+        padding: 10px;
+        border-radius: 5px;
+        display: flex; /* Muestra el menú cuando está abierto */
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Mostrar los botones cuando el menú está abierto */
+    .navbar.open button {
+        display: block; /* Muestra los botones */
+        margin: 10px 0; /* Añadir margen entre los botones */
+        background-color: #fff; /* Fondo blanco para los botones */
+        color: #0073e6; /* Texto en azul */
+        border: none; /* Sin bordes en los botones */
+        padding: 10px; /* Padding para los botones */
+        width: 100%; /* Los botones ocupan todo el ancho disponible */
+        text-align: center; /* Centra el texto */
+    }
+
+    /* Estilo para los botones cuando se hace hover */
+    .navbar.open button:hover {
+        background-color: #005bb5; /* Fondo azul más oscuro al pasar el ratón */
+        color: white; /* Texto blanco al pasar el ratón */
+    }
+
+    .welcome-message {
+        padding: 30px 10px; /* Reduce más el padding en móviles */
+    }
+
+    .welcome-message h1 {
+        font-size: 1.5em; /* Ajusta el tamaño de la fuente para móviles */
+    }
+}
+

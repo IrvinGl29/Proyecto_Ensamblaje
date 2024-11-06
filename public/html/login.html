@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emsamblaje AIGG</title>
+    
+    <link rel="stylesheet" href="/css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Inicio Sesion</h1><br><br>
+        <img src="https://images.vexels.com/media/users/3/137047/isolated/preview/5831a17a290077c646a48c4db78a81bb-icono-de-perfil-de-usuario-azul.png" alt="Icono de usuario" width="80" height="80">
+        <form id="login-form" class="login-form">
+            <div class="input-group">
+                <i class="fa fa-user"></i> <!-- Icono de usuario -->
+                <input type="text" id="username" placeholder="Usuario" required>
+            </div>
+            <div class="input-group">
+                <i class="fa fa-lock"></i> <!-- Icono de candado -->
+                <input type="password" id="password" placeholder="Contraseña" required>
+            </div>
+            <div class="options">
+                
+            </div>
+            <button type="submit" class="login-button">Iniciar sesión</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('http://192.168.100.53:8080/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (data.token) {
+                localStorage.setItem('token', data.token);  // Guardar token en localStorage
+                window.location.href = '/dashboard';  // Redirigir al dashboard
+            } else {
+                alert('Error en el login: ' + data.error);
+            }
+        });
+    </script>
+</body>
+</html>

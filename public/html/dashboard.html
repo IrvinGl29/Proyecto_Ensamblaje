@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Barra superior -->
+        <div class="navbar">
+            <!-- Botón hamburguesa para dispositivos móviles -->
+            <div class="hamburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+
+            <!-- Botones de la barra de navegación -->
+            <a href="/api/inventory"><button>Inventario</button></a> <!-- Enlace a la ruta de inventario -->
+            <a href="/api/components"><button>Componentes</button></a> <!-- Enlace a la ruta de componentes -->
+            <a href="/api/pc-builds"><button>Pc-Ensambladas</button></a> <!-- Enlace a la ruta de pc-builds -->
+            <a href="/api/support"><button>Soporte Técnico</button></a> <!-- Enlace a la ruta de soporte técnico -->
+        </div>
+
+        <!-- Botón de cerrar sesión fuera de la barra superior -->
+        <button id="logout-btn">Cerrar sesión</button>
+
+        <!-- Mensaje de bienvenida debajo de la barra -->
+        <div class="welcome-message">
+            <h1>Bienvenido al Dashboard</h1>
+        </div>
+
+    </div>
+
+    <script>
+        // Obtener el token del localStorage
+        const token = localStorage.getItem('token');
+
+        // Si no hay token, redirigir al login
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login';  // Redirigir al login
+        });
+
+        // Manejo del menú desplegable en dispositivos móviles
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            const navbar = document.querySelector('.navbar');
+            navbar.classList.toggle('open');  // Alterna la clase para mostrar/ocultar el menú
+        });
+    </script>
+
+</body>
+</html>
