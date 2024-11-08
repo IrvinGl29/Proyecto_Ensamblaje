@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const cookieParser = require('cookie-parser'); // Importa cookie-parser
 require('dotenv').config();
 const { router: authRouter, validateToken } = require('./src/routes/auth');
 const db = require('./config/db');
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser()); // Añade cookie-parser aquí
 
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));

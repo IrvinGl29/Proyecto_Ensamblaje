@@ -9,7 +9,7 @@ async function fetchProtectedData() {
     const response = await fetch('http://192.168.100.53:8080/api/inventory', {
         method: 'GET',
         headers: {
-            'Authorization': 'Bearer ${token}' // Asegúrate de usar el prefijo 'Bearer'
+            'Authorization': `Bearer ${token}` // Asegúrate de usar el prefijo 'Bearer'
         }
     });
 

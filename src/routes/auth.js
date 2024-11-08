@@ -63,17 +63,27 @@ router.post('/login', (req, res) => {
         // Generar el token JWT
         const accessToken = generateAccessToken({ username: user.username });
 
-        // Respuesta con el token
-        res.header('authorization', accessToken).json({
-            message: 'Usuario autenticado',
-            token: accessToken
+        // Establecer el token en una cookie HttpOnly y Secure
+        res.cookie('token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Usar Secure solo en producción
+            sameSite: 'Strict', // Ajustar SameSite según las necesidades
+            maxAge: 5 * 60 * 1000 // 5 minutos en milisegundos, igual a expiresIn del token
+        }).json({
+            message: 'Usuario autenticado'
         });
     });
 });
 
+// Coloca esto en auth.js
+router.get('/check', validateToken, (req, res) => {
+    res.status(200).json({ message: 'Authenticated' });
+});
+
+
 // Middleware para verificar JWT
 function validateToken(req, res, next) {
-    const accessToken = req.headers['authorization'];
+    const accessToken = req.cookies.token;
 
     if (!accessToken) {
         return res.status(403).json({ message: 'Access denied. No token provided.' });
@@ -88,6 +98,7 @@ function validateToken(req, res, next) {
         }
     });
 }
+
 
 // Exporta el router y el middleware
 module.exports = { router, validateToken };
