@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario</title>
+    <link rel="stylesheet" href="/css/inventory.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Inventario</h1>
+    
+    <!-- Listado de Productos en Tabla -->
+    <div id="inventory-list">
+        <table id="inventory-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Categoria</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los productos se cargarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formulario para Agregar Producto -->
+    <h2>Agregar Producto</h2>
+    <form id="add-item-form">
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="category">Categoria:</label>
+        <input type="text" id="category" name="category" required><br>
+
+        <label for="quantity">Cantidad:</label>
+        <input type="number" id="quantity" name="quantity" required><br>
+
+        <label for="price">Precio:</label>
+        <input type="number" id="price" name="price" required><br>
+
+        <button type="submit">Agregar</button>
+    </form>
+
+    <!-- Formulario para Editar Producto -->
+    <h2>Editar Producto</h2>
+    <form id="edit-item-form" style="display:none;">
+        <input type="hidden" id="product-id">
+        
+        <label for="edit-name">Nombre:</label>
+        <input type="text" id="edit-name" name="name" required><br>
+
+        <label for="edit-category">Categoria:</label>
+        <input type="text" id="edit-category" name="category" required><br>
+
+        <label for="edit-quantity">Cantidad:</label>
+        <input type="number" id="edit-quantity" name="quantity" required><br>
+
+        <label for="edit-price">Precio:</label>
+        <input type="number" id="edit-price" name="price" required><br>
+
+        <button type="submit">Actualizar</button>
+    </form>
+
+    <script>
+        // Obtener todos los productos y mostrarlos
+        async function loadInventory() {
+            const response = await fetch('/api/inventory', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            if (response.ok) {
+                const products = await response.json();
+                const inventoryTableBody = document.getElementById('inventory-table').getElementsByTagName('tbody')[0];
+                inventoryTableBody.innerHTML = '';  // Limpiar la tabla antes de agregar los productos
+
+                products.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${product.name}</td>
+                        <td>${product.category}</td>
+                        <td>${product.quantity}</td>
+                        <td>$${product.price}</td>
+                        <td>
+                            <button onclick="editProduct(${product.id})">Edit</button>
+                            <button onclick="deleteProduct(${product.id})">Delete</button>
+                        </td>
+                    `;
+                    inventoryTableBody.appendChild(row);
+                });
+            } else {
+                alert('Error loading inventory');
+            }
+        }
+
+        // Agregar producto
+        document.getElementById('add-item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const category = document.getElementById('category').value;
+            const quantity = document.getElementById('quantity').value;
+            const price = document.getElementById('price').value;
+
+            const response = await fetch('/api/inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                },
+                body: JSON.stringify({ name, category, quantity, price })
+            });
+
+            if (response.ok) {
+                alert('Product added successfully');
+                loadInventory();  // Recargar el inventario
+                document.getElementById('add-item-form').reset();  // Resetear formulario
+            } else {
+                alert('Error adding product');
+            }
+        });
+
+        // Editar producto
+        function editProduct(id) {
+            document.getElementById('edit-item-form').style.display = 'block';
+            document.getElementById('add-item-form').style.display = 'none';
+
+            fetch(`/api/inventory/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(product => {
+                document.getElementById('product-id').value = product.id;
+                document.getElementById('edit-name').value = product.name;
+                document.getElementById('edit-category').value = product.category;
+                document.getElementById('edit-quantity').value = product.quantity;
+                document.getElementById('edit-price').value = product.price;
+            });
+        }
+
+        // Actualizar producto
+        document.getElementById('edit-item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('product-id').value;
+            const name = document.getElementById('edit-name').value;
+            const category = document.getElementById('edit-category').value;
+            const quantity = document.getElementById('edit-quantity').value;
+            const price = document.getElementById('edit-price').value;
+
+            const response = await fetch(`/api/inventory/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                },
+                body: JSON.stringify({ name, category, quantity, price })
+            });
+
+            if (response.ok) {
+                alert('Product updated successfully');
+                loadInventory();  // Recargar el inventario
+                document.getElementById('edit-item-form').reset();  // Resetear formulario
+                document.getElementById('edit-item-form').style.display = 'none';
+                document.getElementById('add-item-form').style.display = 'block';
+            } else {
+                alert('Error updating product');
+            }
+        });
+
+        // Eliminar producto
+        async function deleteProduct(id) {
+            const response = await fetch(`/api/inventory/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            if (response.ok) {
+                alert('Product deleted successfully');
+                loadInventory();  // Recargar el inventario
+            } else {
+                alert('Error deleting product');
+            }
+        }
+
+        // Cargar inventario al inicio
+        loadInventory();
+    </script>
+</body>
+</html>

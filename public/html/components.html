@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Componentes</title>
+    <link rel="stylesheet" href="/css/components.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Componentes</h1>
+    
+    <!-- Listado de Componentes en Tabla -->
+    <div id="components-list">
+        <table id="components-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Fabricante</th>
+                    <th>Existencias</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Los componentes se cargarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formulario para Agregar Componente -->
+    <h2>Agregar Componente</h2>
+    <form id="add-component-form">
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="type">Tipo:</label>
+        <input type="text" id="type" name="type" required><br>
+
+        <label for="manufacturer">Fabricante:</label>
+        <input type="text" id="manufacturer" name="manufacturer" required><br>
+
+        <label for="stock">Existencias:</label>
+        <input type="number" id="stock" name="stock" required><br>
+
+        <label for="price">Precio:</label>
+        <input type="number" id="price" name="price" required><br>
+
+        <button type="submit">Agregar</button>
+    </form>
+
+    <!-- Formulario para Editar Componente -->
+    <h2>Editar Componente</h2>
+    <form id="edit-component-form" style="display:none;">
+        <input type="hidden" id="component-id">
+        
+        <label for="edit-name">Nombre:</label>
+        <input type="text" id="edit-name" name="name" required><br>
+
+        <label for="edit-type">Tipo:</label>
+        <input type="text" id="edit-type" name="type" required><br>
+
+        <label for="edit-manufacturer">Fabricante:</label>
+        <input type="text" id="edit-manufacturer" name="manufacturer" required><br>
+
+        <label for="edit-stock">Existencias:</label>
+        <input type="number" id="edit-stock" name="stock" required><br>
+
+        <label for="edit-price">Precio:</label>
+        <input type="number" id="edit-price" name="price" required><br>
+
+        <button type="submit">Actualizar</button>
+    </form>
+
+    <script>
+        // Obtener todos los componentes y mostrarlos
+        async function loadComponents() {
+            const response = await fetch('/api/components', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            if (response.ok) {
+                const components = await response.json();
+                const componentsTableBody = document.getElementById('components-table').getElementsByTagName('tbody')[0];
+                componentsTableBody.innerHTML = '';  // Limpiar la tabla antes de agregar los componentes
+
+                components.forEach(component => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${component.name}</td>
+                        <td>${component.type}</td>
+                        <td>${component.manufacturer}</td>
+                        <td>${component.stock}</td>
+                        <td>$${component.price}</td>
+                        <td>
+                            <button onclick="editComponent(${component.id})">Edit</button>
+                            <button onclick="deleteComponent(${component.id})">Delete</button>
+                        </td>
+                    `;
+                    componentsTableBody.appendChild(row);
+                });
+            } else {
+                alert('Error loading components');
+            }
+        }
+
+        // Agregar componente
+        document.getElementById('add-component-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const type = document.getElementById('type').value;
+            const manufacturer = document.getElementById('manufacturer').value;
+            const stock = document.getElementById('stock').value;
+            const price = document.getElementById('price').value;
+
+            const response = await fetch('/api/components', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                },
+                body: JSON.stringify({ name, type, manufacturer, stock, price })
+            });
+
+            if (response.ok) {
+                alert('Component added successfully');
+                loadComponents();  // Recargar el inventario de componentes
+                document.getElementById('add-component-form').reset();  // Resetear formulario
+            } else {
+                alert('Error adding component');
+            }
+        });
+
+        // Editar componente
+        function editComponent(id) {
+            document.getElementById('edit-component-form').style.display = 'block';
+            document.getElementById('add-component-form').style.display = 'none';
+
+            fetch(`/api/components/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(component => {
+                document.getElementById('component-id').value = component.id;
+                document.getElementById('edit-name').value = component.name;
+                document.getElementById('edit-type').value = component.type;
+                document.getElementById('edit-manufacturer').value = component.manufacturer;
+                document.getElementById('edit-stock').value = component.stock;
+                document.getElementById('edit-price').value = component.price;
+            });
+        }
+
+        // Actualizar componente
+        document.getElementById('edit-component-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('component-id').value;
+            const name = document.getElementById('edit-name').value;
+            const type = document.getElementById('edit-type').value;
+            const manufacturer = document.getElementById('edit-manufacturer').value;
+            const stock = document.getElementById('edit-stock').value;
+            const price = document.getElementById('edit-price').value;
+
+            const response = await fetch(`/api/components/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                },
+                body: JSON.stringify({ name, type, manufacturer, stock, price })
+            });
+
+            if (response.ok) {
+                alert('Component updated successfully');
+                loadComponents();  // Recargar el inventario de componentes
+                document.getElementById('edit-component-form').reset();  // Resetear formulario
+                document.getElementById('edit-component-form').style.display = 'none';
+                document.getElementById('add-component-form').style.display = 'block';
+            } else {
+                alert('Error updating component');
+            }
+        });
+
+        // Eliminar componente
+        async function deleteComponent(id) {
+            const response = await fetch(`/api/components/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            if (response.ok) {
+                alert('Component deleted successfully');
+                loadComponents();  // Recargar el inventario de componentes
+            } else {
+                alert('Error deleting component');
+            }
+        }
+
+        // Cargar componentes al inicio
+        loadComponents();
+    </script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pc-Ensambladas</title>
+    <link rel="stylesheet" href="/css/pc-builds.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pc-Ensambladas</h1>
+    
+    <!-- Listado de Configuraciones de PC en Tabla -->
+    <div id="pc-builds-list">
+        <table id="pc-builds-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Componentes</th>
+                    <th>Precio Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las configuraciones de PC se cargarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formulario para Agregar Configuración de PC -->
+    <h2>Agregar Configuracion Pc</h2>
+    <form id="add-pc-build-form">
+        <label for="pc-name">Nombre:</label>
+        <input type="text" id="pc-name" name="name" required><br>
+
+        <label for="components">Componentes:</label>
+        <input type="text" id="components" name="components" required><br>
+
+        <label for="total-price">Precio Total:</label>
+        <input type="number" id="total-price" name="total-price" required><br>
+
+        <button type="submit">Agregar</button>
+    </form>
+
+    <!-- Formulario para Editar Configuración de PC -->
+    <h2>Editar Configuracion Pc</h2>
+    <form id="edit-pc-build-form" style="display:none;">
+        <input type="hidden" id="pc-build-id">
+        
+        <label for="edit-pc-name">Nombre:</label>
+        <input type="text" id="edit-pc-name" name="name" required><br>
+
+        <label for="edit-components">Componentes:</label>
+        <input type="text" id="edit-components" name="components" required><br>
+
+        <label for="edit-total-price">Precio Total:</label>
+        <input type="number" id="edit-total-price" name="total-price" required><br>
+
+        <button type="submit">Actualizar</button>
+    </form>
+
+    <script>
+        // Obtener todas las configuraciones de PC y mostrarlas
+        async function loadPCBuilds() {
+            const response = await fetch('/api/pc-builds', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            if (response.ok) {
+                const pcBuilds = await response.json();
+                const pcBuildsTableBody = document.getElementById('pc-builds-table').getElementsByTagName('tbody')[0];
+                pcBuildsTableBody.innerHTML = '';  // Limpiar la tabla antes de agregar las configuraciones de PC
+
+                pcBuilds.forEach(pcBuild => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${pcBuild.name}</td>
+                        <td>${pcBuild.components}</td>
+                        <td>$${pcBuild.price}</td>
+                        <td>
+                            <button onclick="editPCBuild(${pcBuild.id})">Edit</button>
+                            <button onclick="deletePCBuild(${pcBuild.id})">Delete</button>
+                        </td>
+                    `;
+                    pcBuildsTableBody.appendChild(row);
+                });
+            } else {
+                alert('Error loading PC builds');
+            }
+        }
+
+        // Agregar configuración de PC
+        document.getElementById('add-pc-build-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('pc-name').value;
+            const components = document.getElementById('components').value;
+            const totalPrice = document.getElementById('total-price').value;
+
+            const response = await fetch('/api/pc-builds', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                },
+                body: JSON.stringify({ name, components, totalPrice })
+            });
+
+            if (response.ok) {
+                alert('PC Build added successfully');
+                loadPCBuilds();  // Recargar las configuraciones de PC
+                document.getElementById('add-pc-build-form').reset();  // Resetear formulario
+            } else {
+                alert('Error adding PC Build');
+            }
+        });
+
+        // Editar configuración de PC
+        function editPCBuild(id) {
+            document.getElementById('edit-pc-build-form').style.display = 'block';
+            document.getElementById('add-pc-build-form').style.display = 'none';
+
+            fetch(`/api/pc-builds/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(pcBuild => {
+                document.getElementById('pc-build-id').value = pcBuild.id;
+                document.getElementById('edit-pc-name').value = pcBuild.name;
+                document.getElementById('edit-components').value = pcBuild.components;
+                document.getElementById('edit-total-price').value = pcBuild.price;
+            });
+        }
+
+        // Actualizar configuración de PC
+        document.getElementById('edit-pc-build-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('pc-build-id').value;
+            const name = document.getElementById('edit-pc-name').value;
+            const components = document.getElementById('edit-components').value;
+            const totalPrice = document.getElementById('edit-total-price').value;
+
+            const response = await fetch(`/api/pc-builds/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                },
+                body: JSON.stringify({ name, components, totalPrice })
+            });
+
+            if (response.ok) {
+                alert('PC Build updated successfully');
+                loadPCBuilds();  // Recargar las configuraciones de PC
+                document.getElementById('edit-pc-build-form').reset();  // Resetear formulario
+                document.getElementById('edit-pc-build-form').style.display = 'none';
+                document.getElementById('add-pc-build-form').style.display = 'block';
+            } else {
+                alert('Error updating PC Build');
+            }
+        });
+
+        // Eliminar configuración de PC
+        async function deletePCBuild(id) {
+            const response = await fetch(`/api/pc-builds/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                }
+            });
+
+            if (response.ok) {
+                alert('PC Build deleted successfully');
+                loadPCBuilds();  // Recargar las configuraciones de PC
+            } else {
+                alert('Error deleting PC Build');
+            }
+        }
+
+        // Cargar configuraciones de PC al inicio
+        loadPCBuilds();
+    </script>
+</body>
+</html>

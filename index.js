@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser'); // Importa cookie-parser
 require('dotenv').config();
-const { router: authRouter, validateToken } = require('./src/routes/auth');
+const { router: authRouter, validateToken } = require('./src/routes/auth'); // Aquí importamos validateToken
 const db = require('./config/db');
 const path = require('path');
 
@@ -33,17 +33,30 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'html', 'dashboard.html'));
 });
 
+// Rutas para cada sección (para los usuarios autenticados)
+app.get('/inventory', validateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'inventory.html'));
+});
+
+app.get('/components', validateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'components.html'));
+});
+
+app.get('/pc-builds', validateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'pc-builds.html'));
+});
+
+app.get('/support', validateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'support.html'));
+});
+
 // Rutas de autenticación
 app.use('/api/auth', authRouter);
 
-// Middleware de validación de token para rutas protegidas
-// Aplica solo después de las rutas públicas
-app.use(validateToken);
-
-// Rutas protegidas
+// Rutas protegidas (ya con validación de token)
 app.use('/api/components', require('./src/routes/components'));
 app.use('/api/pc-builds', require('./src/routes/pc-builds'));
-app.use('/api/inventory', require('./src/routes/inventory'));
+app.use('/api/inventory', require('./src/routes/inventory'));  // Aquí se aplicará validateToken en inventory.js
 app.use('/api/support', require('./src/routes/support'));
 
 // Empezando el servidor

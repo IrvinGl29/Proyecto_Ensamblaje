@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soporte Tecnico</title>
+    <link rel="stylesheet" href="/css/support.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Soporte Tecnico</h1>
+    
+    <!-- Listado de Solicitudes de Soporte -->
+    <div id="support">
+        <table id="support">
+            <thead>
+                <tr>
+                    <th>Id Solicitud</th>
+                    <th>Nombre Cliente</th>
+                    <th>Descripcion</th>
+                    <th>Componentes</th>
+                    <th>Estatus</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las solicitudes de soporte se cargarán aquí -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Obtener todas las solicitudes de soporte y mostrarlas
+        async function loadSupportRequests() {
+            try {
+                const response = await fetch('/api/support', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
+                    }
+                });
+
+                // Verificar si la respuesta fue exitosa
+                if (!response.ok) {
+                    throw new Error('Error loading support requests: ' + response.statusText);
+                }
+
+                const supportRequests = await response.json();
+
+                // Verificar que los datos tengan las propiedades esperadas
+                if (!Array.isArray(supportRequests)) {
+                    throw new Error('Invalid data format: expected an array of support requests');
+                }
+
+                const supportTableBody = document.getElementById('support').getElementsByTagName('tbody')[0];
+                supportTableBody.innerHTML = '';  // Limpiar la tabla antes de agregar las solicitudes
+
+                supportRequests.forEach(request => {
+                    // Asegurarse de que las propiedades 'createdAt' y 'updatedAt' existen
+                    const createdAt = request.createdAt ? new Date(request.createdAt).toLocaleString() : 'N/A';
+                    const updatedAt = request.updatedAt ? new Date(request.updatedAt).toLocaleString() : 'N/A';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${request.id}</td>
+                        <td>${request.customerName}</td>
+                        <td>${request.issueDescription}</td>
+                        <td>${request.components}</td>
+                        <td>${request.status}</td>
+                        <td>${createdAt}</td>
+                        <td>${updatedAt}</td>
+                    `;
+                    supportTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred while loading support requests. Please try again later.');
+            }
+        }
+
+        // Cargar solicitudes de soporte al inicio
+        loadSupportRequests();
+    </script>
+</body>
+</html>
