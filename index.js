@@ -50,13 +50,15 @@ app.get('/support', validateToken, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'html', 'support.html'));
 });
 
+app.use('/api/inventory', require('./src/routes/inventory'));
+
 // Rutas de autenticación
 app.use('/api/auth', authRouter);
 
 // Rutas protegidas (ya con validación de token)
 app.use('/api/components', require('./src/routes/components'));
 app.use('/api/pc-builds', require('./src/routes/pc-builds'));
-app.use('/api/inventory', require('./src/routes/inventory'));  // Aquí se aplicará validateToken en inventory.js
+//app.use('/api/inventory', require('./src/routes/inventory'));  // Aquí se aplicará validateToken en inventory.js
 app.use('/api/support', require('./src/routes/support'));
 
 // Empezando el servidor

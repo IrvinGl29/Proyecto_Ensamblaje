@@ -1,11 +1,11 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const db = require('../../config/db'); // Asegúrate de que la ruta sea correcta
+const db = require('../../config/db');
 require('dotenv').config();
 
 const router = Router();
-const saltRounds = 10; // Número de rondas de sal para bcrypt
+const saltRounds = 10;
 
 // Función para generar el token de acceso
 function generateAccessToken(user) {
@@ -20,10 +20,7 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: 'Please provide username and password.' });
     }
 
-    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Guardar el nuevo usuario en la base de datos
     const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
     db.query(query, [username, hashedPassword], (err, result) => {
         if (err) {
@@ -41,7 +38,6 @@ router.post('/login', (req, res) => {
         return res.status(400).json({ error: 'Please provide username and password.' });
     }
 
-    // Buscar el usuario en la base de datos
     const query = 'SELECT * FROM users WHERE username = ?';
     db.query(query, [username], async (err, results) => {
         if (err) {
@@ -53,33 +49,37 @@ router.post('/login', (req, res) => {
         }
 
         const user = results[0];
-
-        // Comparar las contraseñas
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
             return res.status(401).json({ error: 'Invalid password.' });
         }
 
-        // Generar el token JWT
         const accessToken = generateAccessToken({ username: user.username });
 
-        // Establecer el token en una cookie HttpOnly y Secure
         res.cookie('token', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Usar Secure solo en producción
-            sameSite: 'Strict', // Ajustar SameSite según las necesidades
-            maxAge: 5 * 60 * 1000 // 5 minutos en milisegundos, igual a expiresIn del token
-        }).json({
-            message: 'Usuario autenticado'
-        });
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 5 * 60 * 1000 // 5 minutos
+        }).json({ message: 'Usuario autenticado' });
     });
 });
 
-// Coloca esto en auth.js
+// Ruta para cerrar sesión (logout)
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+    });
+
+    res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+});
+
+// Ruta para verificar el estado de autenticación
 router.get('/check', validateToken, (req, res) => {
     res.status(200).json({ message: 'Authenticated' });
 });
-
 
 // Middleware para verificar JWT
 function validateToken(req, res, next) {
@@ -93,12 +93,10 @@ function validateToken(req, res, next) {
         if (err) {
             return res.status(401).json({ message: 'Access denied, token expired or incorrect' });
         } else {
-            req.user = user; // Almacena la información del usuario decodificado
+            req.user = user;
             next();
         }
     });
 }
 
-
-// Exporta el router y el middleware
 module.exports = { router, validateToken };

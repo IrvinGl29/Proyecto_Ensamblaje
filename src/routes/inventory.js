@@ -3,7 +3,7 @@ const router = Router();
 const db = require('../../config/db');
 const { validateToken } = require('./auth'); // Importa el middleware
 
-router.use(validateToken);
+//router.use(validateToken);
 
 // Obtener todos los productos del inventario
 router.get('/', async (req, res) => {
