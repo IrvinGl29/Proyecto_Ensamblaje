@@ -53,7 +53,7 @@ app.get('/support', validateToken, (req, res) => {
 app.use('/api/inventory', require('./src/routes/inventory'));
 
 // Rutas de autenticación
-app.use('/api/auth', authRouter);
+//app.use('/api/auth', authRouter);
 
 // Rutas protegidas (ya con validación de token)
 app.use('/api/components', require('./src/routes/components'));
